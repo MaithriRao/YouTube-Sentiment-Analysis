@@ -24,6 +24,9 @@
         wordcloud
         mlflow
         boto3
+        optuna
+        lightgbm
+        xgboost
       ]);
     in {
       default = pkgs.mkShellNoCC {
