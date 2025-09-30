@@ -36,12 +36,9 @@ Run the following command on EC2 machine
 aws configure
 # Finally 
 mlflow server -h 0.0.0.0 --default-artifact-root s3://[YOUR-S3-BUCKET-NAME]/
-
 # open Public IPv4 DNS to the port 5000
-
-
 #set uri in your local terminal and in your code 
-export MLFLOW_TRACKING_URI=http://ec2-54-147-36-34.compute-1.amazonaws.com:5000/
+export MLFLOW_TRACKING_URI=http://ec2-xx-xx-xx-xx.compute-1.amazonaws.com:5000/
 ```
 ### B.MLflow Server Installation & Remote Access
 The MLflow server dependencies were installed and configured on the remote EC2 machine. This section documents the process for accessing and starting the server remotely:
