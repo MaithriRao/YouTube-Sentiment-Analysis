@@ -48,7 +48,7 @@ The MLflow server dependencies were installed and configured on the remote EC2 m
 * aws configure
 * cd mlflow
 * pipenv shell
-* mlflow server -h 0.0.0.0 --workers 1 --default-artifact-root s3://mlflow-bucket-first-25
+* mlflow server -h 0.0.0.0 --workers 1 --default-artifact-root s3://[YOUR-S3-BUCKET-NAME]
 ```
 * **Note**:
   * Configure AWS Credentials once to set the credentials that grant the EC2 instance environment access to the S3 artifact bucket
