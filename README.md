@@ -18,9 +18,10 @@
 3. Export the credentials in your AWS CLI by running "aws configure"
 4. Create a s3 bucket
 5. Create EC2 machine (Ubuntu) & add Security groups 5000 port
-Run the following command on EC2 machine
+Run the following command on your local machine (or AWS CLI)
 ```bash
-* sudo apt update
+* ssh ubuntu@ec2-xx-xx-xx-xx.compute-1.amazonaws.com
+* tmux
 * sudo apt update
 * sudo apt install python3-pip
 * sudo apt install pipenv
@@ -32,27 +33,19 @@ Run the following command on EC2 machine
 * pipenv install boto3
 * pipenv shell
 
-# Then set aws credentials
+# NOTE: Enter your AWS Access Key ID and Secret Access Key when prompted
 aws configure
-# Finally 
-mlflow server -h 0.0.0.0 --default-artifact-root s3://[YOUR-S3-BUCKET-NAME]/
+
+# Finally start the MLflow Tracking Server
+# The --workers 1 flag ensures the server can handle multiple concurrent requests efficiently.
+mlflow server -h 0.0.0.0 --workers 1 --default-artifact-root s3://[YOUR-S3-BUCKET-NAME]/
+
 # open Public IPv4 DNS to the port 5000
+
 #set uri in your local terminal and in your code 
 export MLFLOW_TRACKING_URI=http://ec2-xx-xx-xx-xx.compute-1.amazonaws.com:5000/
 ```
-### B.MLflow Server Installation & Remote Access
-The MLflow server dependencies were installed and configured on the remote EC2 machine. This section documents the process for accessing and starting the server remotely:
-```bash
-* ssh ubuntu@ec2-xx-xx-xx-xx.compute-1.amazonaws.com
-* tmux
-* aws configure
-* cd mlflow
-* pipenv shell
-* mlflow server -h 0.0.0.0 --workers 1 --default-artifact-root s3://[YOUR-S3-BUCKET-NAME]
-```
-* **Note**:
-  * Configure AWS Credentials once to set the credentials that grant the EC2 instance environment access to the S3 artifact bucket
-  * The flag --workers 1 is explicitly used here for stability and resource management on a single, potentially low-resource EC2 instance
+💡 Tip: tmux session allows the MLflow server to run persistently even after you close your connection.
 
 
 
