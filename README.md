@@ -20,18 +20,18 @@
 5. Create EC2 machine (Ubuntu) & add Security groups 5000 port
 Run the following command on your local machine (or AWS CLI)
 ```bash
-* ssh ubuntu@ec2-xx-xx-xx-xx.compute-1.amazonaws.com
-* tmux
-* sudo apt update
-* sudo apt install python3-pip
-* sudo apt install pipenv
-* sudo apt install virtualenv
-* mkdir mlflow
-* cd mlflow
-* pipenv install mlflow
-* pipenv install awscli
-* pipenv install boto3
-* pipenv shell
+ssh ubuntu@ec2-xx-xx-xx-xx.compute-1.amazonaws.com
+tmux
+sudo apt update
+sudo apt install python3-pip
+sudo apt install pipenv
+sudo apt install virtualenv
+mkdir mlflow
+cd mlflow
+pipenv install mlflow
+pipenv install awscli
+pipenv install boto3
+pipenv shell
 
 # NOTE: Enter your AWS Access Key ID and Secret Access Key when prompted
 aws configure
