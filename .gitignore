@@ -7,3 +7,10 @@
 /experiment_info.json
 data/*
 .dvc/
+dataset.csv
+confusion_matrix*.png
+model_building_errors.log
+model_evaluation_errors.log
+model_registration_errors.log
+errors.log
+
