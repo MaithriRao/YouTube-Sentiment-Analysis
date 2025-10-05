@@ -14,4 +14,5 @@ model_evaluation_errors.log
 model_registration_errors.log
 errors.log
 mlruns
-
+reddit_preprocessing.csv 
+preprocessing_errors.log
