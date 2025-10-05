@@ -13,4 +13,5 @@ model_building_errors.log
 model_evaluation_errors.log
 model_registration_errors.log
 errors.log
+mlruns
 
