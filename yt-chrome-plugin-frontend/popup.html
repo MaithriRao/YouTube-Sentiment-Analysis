@@ -26,6 +26,40 @@
       margin-top: 10px;
       font-size: 16px;
     }
+    #api-key-section {
+      padding: 15px;
+      background-color: #333;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border: 1px solid #0099ff;
+    }
+    #api-key-section label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #fff;
+    }
+    #youtube-key {
+      width: calc(100% - 10px);
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #555;
+      border-radius: 4px;
+      background-color: #2a2a2a;
+      color: #fff;
+    }
+    #save-key-button {
+      background-color: #0099ff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #save-key-button:hover {
+      background-color: #0077cc;
+    }
     .comment-list {
       list-style: none;
       padding: 0;
@@ -74,7 +108,17 @@
 </head>
 <body>
   <h1>YouTube Comment Insights</h1>
-  <div id="output" class="section"></div>
+  <div id="api-key-section" class="section">
+    <h3>Setup</h3>
+    <label for="youtube-key">Enter Your YouTube API Key:</label>
+    <input type="password" id="youtube-key" placeholder="AIzaSy...">
+    <button id="save-key-button">Save Key</button>
+  </div>
+  
+  <div id="main-content" class="section" style="display: none;">
+  <div id="output"></div>
+  </div>
+  
   <script src="popup.js"></script>
 </body>
 </html>
