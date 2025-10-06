@@ -16,3 +16,8 @@ errors.log
 mlruns
 reddit_preprocessing.csv 
 preprocessing_errors.log
+experiment_4_handling_imbalanced_data.ipynb
+experiment_5_xgboost_with_hpt.ipynb      
+experiment_7_stacking.ipynb
+experiment_6_lightgbm_detailed_hpt.ipynb 
+src/
