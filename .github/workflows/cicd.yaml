@@ -102,7 +102,7 @@ name: YouTube Sentiment Analysis Deployment
 on:
   push:
     branches:
-      - main # Trigger the workflow on pushes to the main branch
+      - master # Trigger the workflow on pushes to the master branch
     paths-ignore:
       - 'README.md'
 
