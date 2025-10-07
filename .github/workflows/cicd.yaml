@@ -93,7 +93,7 @@ jobs:
 
       - name: Pull and Run new container (Updated with correct ports and environment variables)
         run: |
-          FIX: Directly constructing the image URI using secrets, which are confirmed to exist.
+          # FIX: Directly constructing the image URI using secrets, which are confirmed to exist.
           IMAGE_URI=${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
           echo "Pulling new image: $IMAGE_URI"
           docker pull $IMAGE_URI
