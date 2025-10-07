@@ -93,19 +93,19 @@ jobs:
 
       - name: Pull and Run new container (Updated with correct ports and environment variables)
         run: |
-          # The ECR_IMAGE variable holds the full URI from the previous job's output.
-          ECR_IMAGE=${{ needs.build-and-push-ecr-image.outputs.ecr_image }}
-          echo "Pulling new image: $ECR_IMAGE"
-          docker pull $ECR_IMAGE
+          FIX: Directly constructing the image URI using secrets, which are confirmed to exist.
+          IMAGE_URI=${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
+          echo "Pulling new image: $IMAGE_URI"
+          docker pull $IMAGE_URI
           
           # Running the container with the correct 8080:8080 port mapping and 
-          # setting all necessary environment variables as per your original file.
+          # setting all necessary environment variables.
           echo "Starting container cnncls on port 8080"
           docker run -d -p 8080:8080 --name=cnncls \
           -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
           -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
           -e 'AWS_REGION=${{ secrets.AWS_REGION }}' \
-          $ECR_IMAGE
+          $IMAGE_URI # Use the secret-based URI here
           
           echo "Deployment successful."
       
