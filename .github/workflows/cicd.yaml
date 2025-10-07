@@ -70,6 +70,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+              # --- Added extra---
+      - name: Stop and remove old container (Failure Tolerant Cleanup)
+        # We use || true to ensure the step passes even if 'docker stop' or 'docker rm' fails 
+        # (which happens if the container isn't running).
+        run: |
+          echo "Attempting to stop and remove cnncls container..."
+          docker stop cnncls || true
+          docker rm -fv cnncls || true
+          echo "Cleanup attempt complete."
+
+      # --- END Of extra ---
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
