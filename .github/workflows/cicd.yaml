@@ -106,7 +106,8 @@ jobs:
           -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
           -e 'AWS_REGION=${{ secrets.AWS_REGION }}'\
           -e 'MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}'  \
-          $IMAGE_URI # Use the secret-based URI here
+          IMAGE_URI="${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest"
+          IMAGE_URI=$(echo "$IMAGE_URI" | tr -d '[:space:]') # Use the secret-based URI here
           
           echo "Deployment successful."
       
