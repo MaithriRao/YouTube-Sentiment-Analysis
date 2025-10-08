@@ -3,7 +3,6 @@
 .ipynb_checkpoints/
 .env
 /lgbm_model.pkl
-/tfidf_vectorizer.pkl
 /experiment_info.json
 data/*
 .dvc/
