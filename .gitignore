@@ -2,7 +2,6 @@
 /__pycache__/
 .ipynb_checkpoints/
 .env
-/lgbm_model.pkl
 /experiment_info.json
 data/*
 .dvc/
