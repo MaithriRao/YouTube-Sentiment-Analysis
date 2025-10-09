@@ -14,6 +14,7 @@
     ],
     "host_permissions": [
     "http://localhost:5000/*",
+    "d133ng57wrs7e3.cloudfront.net/*",
     "https://www.googleapis.com/*"
   ]
 }

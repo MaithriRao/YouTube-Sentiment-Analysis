@@ -3,7 +3,8 @@
 document.addEventListener("DOMContentLoaded", async () => {
     // 
     const outputDiv = document.getElementById("output");
-    const API_URL = 'http://localhost:5000'; // 
+    const API_URL = 'd133ng57wrs7e3.cloudfront.net'//  API is now deployed behind CloudFront and accessed via HTTPS // CloudFront Distribution Domain Name
+    // const API_URL =  'http://localhost:5000'; // when testing the API on your local machine
 
     // --- Key Management Elements ---
     const apiKeySection = document.getElementById('api-key-section'); // Assumes you add this div to popup.html
