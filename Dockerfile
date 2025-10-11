@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY . /app
 
+COPY lgbm_model.pkl .
+
+COPY tfidf_vectorizer.pkl .
+
 RUN pip install -r requirements.txt
 
 EXPOSE 8080
