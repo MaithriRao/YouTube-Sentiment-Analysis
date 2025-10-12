@@ -88,9 +88,19 @@ def load_model(model_path, vectorizer_path): # alternatively from local director
     except Exception as e:
         raise
 
+# Initialize the model and vectorizer
+try:
+    # CRITICAL: This needs to be runnable for Gunicorn to start workers.
+    model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")
+    # New print statement to confirm model load
+    print("*** ML STATUS: Model and Vectorizer loaded successfully.", flush=True)
+except Exception as e:
+    # If model loading fails, the app cannot run, but we want the print to show up.
+    print("*** ML STATUS: FATAL! Application cannot start without model files.", flush=True)
+    # The app will likely crash here if the assets are genuinely missing.
 
 # Initialize the model and vectorizer
-model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
+# model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
 
 @app.route('/')
 def home():
