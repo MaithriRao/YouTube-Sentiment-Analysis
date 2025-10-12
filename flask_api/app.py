@@ -151,35 +151,61 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.json
-    comments = data.get('comments')
-    print("i am the comment: ",comments)
-    print("i am the comment type: ",type(comments))
-    
-    if not comments:
-        return jsonify({"error": "No comments provided"}), 400
-
     try:
-        # Preprocess each comment before vectorizing
-        preprocessed_comments = [preprocess_comment(comment) for comment in comments]
+        data = request.get_json()
+        video_id = data.get('video_id')
         
-        # Transform comments using the vectorizer
-        transformed_comments = vectorizer.transform(preprocessed_comments)
+        if not video_id:
+            return jsonify({"error": "Missing video_id parameter"}), 400
 
-        # Convert the sparse matrix to dense format
-        dense_comments = transformed_comments.toarray()  # Convert to dense array
+        # Step 1: Fetch comments
+        comments = get_comments_from_youtube(video_id)
         
-        # Make predictions
-        predictions = model.predict(dense_comments).tolist()  # Convert to list
-    
-    # Convert predictions to strings for consistency
-    # predictions = [str(pred) for pred in predictions]
+        if not comments:
+            # This is the error the user is receiving
+            print(f"Warning: No comments retrieved for video ID {video_id}.", flush=True)
+            return jsonify({"error": "No comments provided (Key invalid, video private, or comments disabled)"}), 404
+        
+        # Step 2: Predict sentiment
+        analysis_result = predict_sentiment(comments)
+        
+        return jsonify(analysis_result)
+
     except Exception as e:
-       return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+        print(f"--- FATAL ERROR in /predict endpoint ---", flush=True)
+        print(traceback.format_exc(), flush=True)
+        return jsonify({"error": "An internal server error occurred during prediction."}), 500
+
+# def predict():
+#     data = request.json
+#     comments = data.get('comments')
+#     print("i am the comment: ",comments)
+#     print("i am the comment type: ",type(comments))
     
-    # Return the response with original comments and predicted sentiments
-    response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
-    return jsonify(response)
+#     if not comments:
+#         return jsonify({"error": "No comments provided"}), 400
+
+#     try:
+#         # Preprocess each comment before vectorizing
+#         preprocessed_comments = [preprocess_comment(comment) for comment in comments]
+        
+#         # Transform comments using the vectorizer
+#         transformed_comments = vectorizer.transform(preprocessed_comments)
+
+#         # Convert the sparse matrix to dense format
+#         dense_comments = transformed_comments.toarray()  # Convert to dense array
+        
+#         # Make predictions
+#         predictions = model.predict(dense_comments).tolist()  # Convert to list
+    
+#     # Convert predictions to strings for consistency
+#     # predictions = [str(pred) for pred in predictions]
+#     except Exception as e:
+#        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+    
+#     # Return the response with original comments and predicted sentiments
+#     response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
+#     return jsonify(response)
 
 
 @app.route('/predict_with_timestamps', methods=['POST'])
