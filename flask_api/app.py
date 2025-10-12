@@ -102,6 +102,49 @@ except Exception as e:
 # Initialize the model and vectorizer
 # model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
 
+def get_comments_from_youtube(video_id, max_results=50):
+    if not YOUTUBE_API_KEY:
+        print("Error: YOUTUBE_API_KEY is missing, cannot call YouTube API.", flush=True)
+        return []
+
+    try:
+        # Initialize YouTube API client
+        youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+        
+        comments_list = []
+        next_page_token = None
+        
+        # We limit to 1 page to minimize quota use and speed up response
+        request = youtube.commentThreads().list(
+            part="snippet",
+            videoId=video_id,
+            maxResults=max_results,
+            pageToken=next_page_token,
+            order="relevance"
+        )
+        response = request.execute()
+
+        for item in response.get("items", []):
+            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+            comments_list.append(comment)
+            
+        print(f"Successfully fetched {len(comments_list)} comments.", flush=True)
+        return comments_list
+
+    except googleapiclient.errors.HttpError as e:
+        # CRITICAL FIX: Extract the status code and print the full error content.
+        status_code = e.resp.status
+        error_content = e.content.decode()
+        error_message = f"*** YOUTUBE API REJECTION *** Status: {status_code}. Content: {error_content}"
+        print(error_message, flush=True)
+        
+        # We can now rely on the detailed printout above.
+        return []
+    except Exception as e:
+        print(f"An unexpected error occurred during comment fetching: {e}", flush=True)
+        return []
+
+
 @app.route('/')
 def home():
     return "Welcome to our flask api"
