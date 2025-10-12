@@ -67,7 +67,15 @@ def preprocess_comment(comment):
 # model, vectorizer = load_model_and_vectorizer("yt_chrome_plugin_model", "3", "./tfidf_vectorizer.pkl")  # ("my_model", "version_", "./tfidf_vectorizer.pkl")
 
 
+# We need the key to be accessible to the Flask app
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
 
+if YOUTUBE_API_KEY:
+    # Print first few chars to confirm injection (GitHub masks this in logs)
+    print(f"DEBUG: YOUTUBE_API_KEY loaded. Starts with: {YOUTUBE_API_KEY[:4]}...")
+else:
+    print("FATAL DEBUG: YOUTUBE_API_KEY IS NOT SET IN ENVIRONMENT.")
+    
 def load_model(model_path, vectorizer_path): # alternatively from local directory in case the instance is not active
     """Load the trained model."""
     try:
