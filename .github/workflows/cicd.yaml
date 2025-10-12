@@ -89,26 +89,77 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2 # Updated to v2
 
-      - name: Pull and Run new container (Updated with correct ports and environment variables)
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
+          IMAGE_TAG: latest
         run: |
-          # FIX: Directly constructing the image URI using secrets, which are confirmed to exist.
-          IMAGE_URI=${{ secrets.AWS_ECR_LOGIN_URI }}/${{ secrets.ECR_REPOSITORY_NAME }}:latest
-          echo "Pulling new image: $IMAGE_URI"
-          docker pull "$IMAGE_URI"
+          # Build a docker container
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          # Push it to ECR
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+  Continuous-Deployment:
+    name: Continuous Deployment (EC2 Runner)
+    needs: build-and-push-ecr-image
+    runs-on: self-hosted # Targets your EC2 runner
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # IMPORTANT: If the ECR Login failed previously, this is the most common reason.
+      # We repeat the AWS configuration and ECR login steps on the self-hosted runner
+      # because the credentials from the previous job are not automatically carried over.
+      - name: Configure AWS credentials for Deployment
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR for Deployment
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pull latest image and run container
+        env:
+          ECR_URI: ${{ secrets.AWS_ECR_LOGIN_URI }}
+          ECR_REPO: ${{ secrets.ECR_REPOSITORY_NAME }}
+          # CORRECTED: Fixed typo in AWS_KEY mapping
+          AWS_KEY: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          # CRITICAL FIX: Mapping the secret to a shell variable
+          YOUTUBE_KEY: ${{ secrets.YOUTUBE_API_KEY }} 
+          # NEW: Adding MLFlow URI variable for container environment
+          MLFLOW_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: |
+          # DEBUGGING: Print the values of ECR variables (GitHub automatically masks the actual secret value)
+          echo "DEBUG ECR_URI: $ECR_URI"
+          echo "DEBUG ECR_REPO: $ECR_REPO"
+        
+          IMAGE_URL="$ECR_URI/$ECR_REPO:latest"
           
-          # Running the container with the correct 8080:8080 port mapping and 
-          # setting all necessary environment variables.
-          echo "Starting container cnncls on port 8080"
+          echo "Pulling latest image: $IMAGE_URL"
+          docker pull $IMAGE_URL
+          
+          echo "Stopping and removing previous container 'cnncls'..."
+          # The -f flag forces removal if stopping fails.
+          docker rm -f cnncls || true 
+          
+          echo "Running new container 'cnncls' on port 8080..."
           docker run -d -p 8080:8080 --name=cnncls \
-          -e 'YOUTUBE_API_KEY='$YOUTUBE_KEY \
-          -e 'AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}' \
-          -e 'AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
-          -e 'AWS_REGION=${{ secrets.AWS_REGION }}' \
-          -e 'MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}'  \
-          "$IMAGE_URI"
+            -e 'YOUTUBE_API_KEY='$YOUTUBE_KEY \
+            -e 'AWS_ACCESS_KEY_ID='$AWS_KEY \
+            -e 'AWS_SECRET_ACCESS_KEY='$AWS_SECRET \
+            -e 'AWS_REGION='$AWS_REGION \
+            -e 'MLFLOW_TRACKING_URI='$MLFLOW_URI \
+            $IMAGE_URL
 
       
       
