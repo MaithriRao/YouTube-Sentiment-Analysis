@@ -49,41 +49,41 @@ def preprocess_comment(comment):
         print(f"Error in preprocessing comment: {e}")
         return comment
 
-# # Load the model and vectorizer from the AWS model registry and local storage
-# def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
-#     # Set MLflow tracking URI to your server
-#     load_dotenv()   # Setting MLflow tracking URI
-#     print("Starting load_model_and_vectorizer()")
-#     client = MlflowClient()
-#     model_uri = f"models:/{model_name}/{model_version}"
-#     model = mlflow.pyfunc.load_model(model_uri)
-#     model = model.get_raw_model() # type is  lightgbm.sklearn.LGBMClassifier 
-#     with open(vectorizer_path, 'rb') as file:
-#         vectorizer = pickle.load(file)
-#     print("Done load_model_and_vectorizer()")
-#     return model, vectorizer
-
-# # Initialize the model and vectorizer
-# model, vectorizer = load_model_and_vectorizer("yt_chrome_plugin_model", "3", "./tfidf_vectorizer.pkl")  # ("my_model", "version_", "./tfidf_vectorizer.pkl")
-
-
-
-def load_model(model_path, vectorizer_path): # alternatively from local directory in case the instance is not active
-    """Load the trained model."""
-    try:
-        with open(model_path, 'rb') as file:
-            model = pickle.load(file)
-        
-        with open(vectorizer_path, 'rb') as file:
-            vectorizer = pickle.load(file)
-      
-        return model, vectorizer
-    except Exception as e:
-        raise
-
+# Load the model and vectorizer from the AWS model registry and local storage
+def load_model_and_vectorizer(model_name, model_version, vectorizer_path):
+    # Set MLflow tracking URI to your server
+    load_dotenv()   # Setting MLflow tracking URI
+    print("Starting load_model_and_vectorizer()")
+    client = MlflowClient()
+    model_uri = f"models:/{model_name}/{model_version}"
+    model = mlflow.pyfunc.load_model(model_uri)
+    model = model.get_raw_model() # type is  lightgbm.sklearn.LGBMClassifier 
+    with open(vectorizer_path, 'rb') as file:
+        vectorizer = pickle.load(file)
+    print("Done load_model_and_vectorizer()")
+    return model, vectorizer
 
 # Initialize the model and vectorizer
-model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
+model, vectorizer = load_model_and_vectorizer("yt_chrome_plugin_model", "1", "./tfidf_vectorizer.pkl")  # ("my_model", "version_", "./tfidf_vectorizer.pkl")
+
+
+
+# def load_model(model_path, vectorizer_path): # alternatively from local directory in case the instance is not active
+#     """Load the trained model."""
+#     try:
+#         with open(model_path, 'rb') as file:
+#             model = pickle.load(file)
+        
+#         with open(vectorizer_path, 'rb') as file:
+#             vectorizer = pickle.load(file)
+      
+#         return model, vectorizer
+#     except Exception as e:
+#         raise
+
+
+# # Initialize the model and vectorizer
+# model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
 
 @app.route('/')
 def home():
