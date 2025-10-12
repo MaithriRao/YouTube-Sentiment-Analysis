@@ -8,4 +8,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 8080
 
-CMD ["python3", "flask_api/app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "flask_api.app:app"]
+
+# CMD ["python3", "flask_api/app.py"]
