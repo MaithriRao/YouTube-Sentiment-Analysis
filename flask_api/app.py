@@ -21,23 +21,13 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-
-
-# We need the key to be accessible to the Flask app
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
+
 if YOUTUBE_API_KEY:
-    # We will look for this exact string in the logs!
-    print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.")
+    # FIX: Added flush=True to force output immediately.
+    print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.", flush=True)
 else:
-    print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.")
-
-# 2. Check if the key is set before initializing the YouTube API client
-# (Ensure your get_comments function uses this YOUTUBE_API_KEY variable)
-
-def get_comments_from_youtube(video_id, max_results=50):
-    if not YOUTUBE_API_KEY:
-        print("Error: YOUTUBE_API_KEY is missing, cannot call YouTube API.")
-        return [] # 
+    print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.", flush=True)
 
 
 # Define the preprocessing function
