@@ -21,6 +21,25 @@ from dotenv import load_dotenv
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+
+
+# We need the key to be accessible to the Flask app
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
+if YOUTUBE_API_KEY:
+    # We will look for this exact string in the logs!
+    print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.")
+else:
+    print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.")
+
+# 2. Check if the key is set before initializing the YouTube API client
+# (Ensure your get_comments function uses this YOUTUBE_API_KEY variable)
+
+def get_comments_from_youtube(video_id, max_results=50):
+    if not YOUTUBE_API_KEY:
+        print("Error: YOUTUBE_API_KEY is missing, cannot call YouTube API.")
+        return [] # 
+
+
 # Define the preprocessing function
 def preprocess_comment(comment):
     """Apply preprocessing transformations to a comment."""
@@ -66,16 +85,6 @@ def preprocess_comment(comment):
 
 # # Initialize the model and vectorizer
 # model, vectorizer = load_model_and_vectorizer("yt_chrome_plugin_model", "3", "./tfidf_vectorizer.pkl")  # ("my_model", "version_", "./tfidf_vectorizer.pkl")
-
-
-# We need the key to be accessible to the Flask app
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
-
-if YOUTUBE_API_KEY:
-    # Print first few chars to confirm injection (GitHub masks this in logs)
-    print(f"DEBUG: YOUTUBE_API_KEY loaded. Starts with: {YOUTUBE_API_KEY[:4]}...")
-else:
-    print("FATAL DEBUG: YOUTUBE_API_KEY IS NOT SET IN ENVIRONMENT.")
 
 def load_model(model_path, vectorizer_path): # alternatively from local directory in case the instance is not active
     """Load the trained model."""
