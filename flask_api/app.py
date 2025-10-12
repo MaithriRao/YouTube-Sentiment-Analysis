@@ -29,7 +29,6 @@ if YOUTUBE_API_KEY:
 else:
     print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.", flush=True)
 
-
 # Define the preprocessing function
 def preprocess_comment(comment):
     """Apply preprocessing transformations to a comment."""
