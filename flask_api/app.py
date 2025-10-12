@@ -1,6 +1,7 @@
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend before importing pyplot
 
+import os
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import io
@@ -75,7 +76,7 @@ if YOUTUBE_API_KEY:
     print(f"DEBUG: YOUTUBE_API_KEY loaded. Starts with: {YOUTUBE_API_KEY[:4]}...")
 else:
     print("FATAL DEBUG: YOUTUBE_API_KEY IS NOT SET IN ENVIRONMENT.")
-    
+
 def load_model(model_path, vectorizer_path): # alternatively from local directory in case the instance is not active
     """Load the trained model."""
     try:
