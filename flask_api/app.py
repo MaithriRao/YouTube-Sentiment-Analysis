@@ -104,6 +104,11 @@ except Exception as e:
 # Initialize the model and vectorizer
 # model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")  
 
+
+app = Flask(__name__)
+CORS(app) # Enable CORS for browser extension access
+
+
 def get_comments_from_youtube(video_id, max_results=50):
     if not YOUTUBE_API_KEY:
         print("Error: YOUTUBE_API_KEY is missing, cannot call YouTube API.", flush=True)
@@ -146,68 +151,84 @@ def get_comments_from_youtube(video_id, max_results=50):
         print(f"An unexpected error occurred during comment fetching: {e}", flush=True)
         return []
 
+# --- Preprocessing and Prediction Logic ---
+
+def preprocess_text(text):
+    text = text.lower()
+    text = re.sub(r'http\S+|www\S+|\S+\.\S+', '', text) # Remove URLs
+    text = re.sub(r'<.*?>', '', text) # Remove HTML tags
+    text = re.sub(r'[^a-z0-9\s]', '', text) # Remove punctuation and special characters
+    return text
+
+def predict_sentiment(comments):
+    if not comments:
+        return None
+    
+    preprocessed_comments = [preprocess_text(comment) for comment in comments]
+    
+    # 1. Vectorize the comments
+    # Vectorizer must be fitted on the training data and loaded here.
+    comment_vectors = vectorizer.transform(preprocessed_comments)
+    
+    # 2. Predict the classes (0 or 1)
+    predictions = model.predict(comment_vectors)
+    
+    # 3. Calculate metrics
+    total_comments = len(predictions)
+    positive_count = int(sum(predictions)) # 1 is positive
+    negative_count = total_comments - positive_count # 0 is negative
+    
+    positive_rate = round(positive_count / total_comments * 100, 2)
+    negative_rate = round(negative_count / total_comments * 100, 2)
+    
+    return {
+        "status": "success",
+        "total_comments_analyzed": total_comments,
+        "positive_comments": positive_count,
+        "negative_comments": negative_count,
+        "positive_rate": positive_rate,
+        "negative_rate": negative_rate,
+        "raw_predictions": predictions.tolist() # For debugging/completeness
+    }
+
 
 @app.route('/')
 def home():
     return "Welcome to our flask api"
 
 @app.route('/predict', methods=['POST'])
+
+
 def predict():
+    data = request.json
+    comments = data.get('comments')
+    print("i am the comment: ",comments)
+    print("i am the comment type: ",type(comments))
+    
+    if not comments:
+        return jsonify({"error": "No comments provided"}), 400
+
     try:
-        data = request.get_json()
-        video_id = data.get('video_id')
+        # Preprocess each comment before vectorizing
+        preprocessed_comments = [preprocess_comment(comment) for comment in comments]
         
-        if not video_id:
-            return jsonify({"error": "Missing video_id parameter"}), 400
+        # Transform comments using the vectorizer
+        transformed_comments = vectorizer.transform(preprocessed_comments)
 
-        # Step 1: Fetch comments
-        comments = get_comments_from_youtube(video_id)
+        # Convert the sparse matrix to dense format
+        dense_comments = transformed_comments.toarray()  # Convert to dense array
         
-        if not comments:
-            # This is the error the user is receiving
-            print(f"Warning: No comments retrieved for video ID {video_id}.", flush=True)
-            return jsonify({"error": "No comments provided (Key invalid, video private, or comments disabled)"}), 404
-        
-        # Step 2: Predict sentiment
-        analysis_result = predict_sentiment(comments)
-        
-        return jsonify(analysis_result)
-
+        # Make predictions
+        predictions = model.predict(dense_comments).tolist()  # Convert to list
+    
+    # Convert predictions to strings for consistency
+    # predictions = [str(pred) for pred in predictions]
     except Exception as e:
-        print(f"--- FATAL ERROR in /predict endpoint ---", flush=True)
-        print(traceback.format_exc(), flush=True)
-        return jsonify({"error": "An internal server error occurred during prediction."}), 500
-
-# def predict():
-#     data = request.json
-#     comments = data.get('comments')
-#     print("i am the comment: ",comments)
-#     print("i am the comment type: ",type(comments))
+       return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
     
-#     if not comments:
-#         return jsonify({"error": "No comments provided"}), 400
-
-#     try:
-#         # Preprocess each comment before vectorizing
-#         preprocessed_comments = [preprocess_comment(comment) for comment in comments]
-        
-#         # Transform comments using the vectorizer
-#         transformed_comments = vectorizer.transform(preprocessed_comments)
-
-#         # Convert the sparse matrix to dense format
-#         dense_comments = transformed_comments.toarray()  # Convert to dense array
-        
-#         # Make predictions
-#         predictions = model.predict(dense_comments).tolist()  # Convert to list
-    
-#     # Convert predictions to strings for consistency
-#     # predictions = [str(pred) for pred in predictions]
-#     except Exception as e:
-#        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
-    
-#     # Return the response with original comments and predicted sentiments
-#     response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
-#     return jsonify(response)
+    # Return the response with original comments and predicted sentiments
+    response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
+    return jsonify(response)
 
 
 @app.route('/predict_with_timestamps', methods=['POST'])
