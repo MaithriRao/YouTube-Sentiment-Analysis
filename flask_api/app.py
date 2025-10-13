@@ -200,68 +200,68 @@ def predict_sentiment(comments):
 def home():
     return "Welcome to our YouTube Sentiment Analysis API!"
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        data = request.get_json()
-        video_id = data.get('video_id')
+# @app.route('/predict', methods=['POST'])
+# def predict():
+#     try:
+#         data = request.get_json()
+#         video_id = data.get('video_id')
         
-        if not video_id:
-            return jsonify({"error": "Missing video_id parameter"}), 400
+#         if not video_id:
+#             return jsonify({"error": "Missing video_id parameter"}), 400
 
-        # Step 1: Fetch comments
-        comments = get_comments_from_youtube(video_id)
+#         # Step 1: Fetch comments
+#         comments = get_comments_from_youtube(video_id)
         
-        if not comments:
-            # This is the error the user is receiving
-            print(f"Warning: No comments retrieved for video ID {video_id}.", flush=True)
-            return jsonify({"error": "No comments provided (Key invalid, video private, or comments disabled)"}), 404
+#         if not comments:
+#             # This is the error the user is receiving
+#             print(f"Warning: No comments retrieved for video ID {video_id}.", flush=True)
+#             return jsonify({"error": "No comments provided (Key invalid, video private, or comments disabled)"}), 404
         
-        # Step 2: Predict sentiment
-        analysis_result = predict_sentiment(comments)
+#         # Step 2: Predict sentiment
+#         analysis_result = predict_sentiment(comments)
         
-        return jsonify(analysis_result)
+#         return jsonify(analysis_result)
 
-    except Exception as e:
-        print(f"--- FATAL ERROR in /predict endpoint ---", flush=True)
-        print(traceback.format_exc(), flush=True)
-        return jsonify({"error": "An internal server error occurred during prediction."}), 500
+#     except Exception as e:
+#         print(f"--- FATAL ERROR in /predict endpoint ---", flush=True)
+#         print(traceback.format_exc(), flush=True)
+#         return jsonify({"error": "An internal server error occurred during prediction."}), 500
 
 # @app.route('/')
 # def home():
 #     return "Welcome to our flask api"
 
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     data = request.json
-#     comments = data.get('comments')
-#     print("i am the comment: ",comments)
-#     print("i am the comment type: ",type(comments))
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.json
+    comments = data.get('comments')
+    print("i am the comment: ",comments)
+    print("i am the comment type: ",type(comments))
     
-#     if not comments:
-#         return jsonify({"error": "No comments provided"}), 400
+    if not comments:
+        return jsonify({"error": "No comments provided"}), 400
 
-#     try:
-#         # Preprocess each comment before vectorizing
-#         preprocessed_comments = [preprocess_comment(comment) for comment in comments]
+    try:
+        # Preprocess each comment before vectorizing
+        preprocessed_comments = [preprocess_comment(comment) for comment in comments]
         
-#         # Transform comments using the vectorizer
-#         transformed_comments = vectorizer.transform(preprocessed_comments)
+        # Transform comments using the vectorizer
+        transformed_comments = vectorizer.transform(preprocessed_comments)
 
-#         # Convert the sparse matrix to dense format
-#         dense_comments = transformed_comments.toarray()  # Convert to dense array
+        # Convert the sparse matrix to dense format
+        dense_comments = transformed_comments.toarray()  # Convert to dense array
         
-#         # Make predictions
-#         predictions = model.predict(dense_comments).tolist()  # Convert to list
+        # Make predictions
+        predictions = model.predict(dense_comments).tolist()  # Convert to list
     
-#     # Convert predictions to strings for consistency
-#     # predictions = [str(pred) for pred in predictions]
-#     except Exception as e:
-#        return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
+    # Convert predictions to strings for consistency
+    # predictions = [str(pred) for pred in predictions]
+    except Exception as e:
+       return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
     
-#     # Return the response with original comments and predicted sentiments
-#     response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
-#     return jsonify(response)
+    # Return the response with original comments and predicted sentiments
+    response = [{"comment": comment, "sentiment": sentiment} for comment, sentiment in zip(comments, predictions)]
+    return jsonify(response)
 
 
 @app.route('/predict_with_timestamps', methods=['POST'])
