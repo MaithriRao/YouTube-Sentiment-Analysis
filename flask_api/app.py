@@ -227,9 +227,9 @@ def predict():
         print(traceback.format_exc(), flush=True)
         return jsonify({"error": "An internal server error occurred during prediction."}), 500
 
-@app.route('/')
-def home():
-    return "Welcome to our flask api"
+# @app.route('/')
+# def home():
+#     return "Welcome to our flask api"
 
 # @app.route('/predict', methods=['POST'])
 
