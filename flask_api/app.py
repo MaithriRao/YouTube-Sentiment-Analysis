@@ -11,7 +11,7 @@ import mlflow
 import numpy as np
 import re
 import pandas as pd
-from nltk.corpus import stopwords
+# from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from mlflow.tracking import MlflowClient
 import matplotlib.dates as mdates
@@ -19,6 +19,8 @@ import pickle
 from dotenv import load_dotenv
 import googleapiclient.discovery
 import time
+import nltk
+nltk.download('stopwords')
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
