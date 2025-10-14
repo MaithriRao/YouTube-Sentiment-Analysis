@@ -25,13 +25,13 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 load_dotenv() 
 
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
+# YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
 
-if YOUTUBE_API_KEY:
-    # FIX: Added flush=True to force output immediately.
-    print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.", flush=True)
-else:
-    print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.", flush=True)
+# if YOUTUBE_API_KEY:
+#     # FIX: Added flush=True to force output immediately.
+#     print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.", flush=True)
+# else:
+#     print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.", flush=True)
 
 # Define the preprocessing function
 def preprocess_comment(comment):
