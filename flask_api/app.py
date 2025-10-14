@@ -25,6 +25,11 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 load_dotenv() 
 
+try:
+    nltk.data.find('corpora/stopwords')
+except nltk.downloader.DownloadError:
+    nltk.download('stopwords')
+
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
 
 if YOUTUBE_API_KEY:
