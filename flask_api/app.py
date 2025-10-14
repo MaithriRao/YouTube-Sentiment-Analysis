@@ -87,7 +87,6 @@ except Exception as e:
 
 
 # --- Flask Routes ---
-
 @app.route('/', methods=['GET'])
 def home():
     return "Welcome to our YouTube Sentiment Analysis API!"
@@ -119,8 +118,6 @@ def predict_with_timestamps():
         # Make predictions
         predictions = model.predict(dense_comments).tolist()  # Convert to list
         
-        # # Convert predictions to strings for consistency
-        # predictions = [str(pred) for pred in predictions]
     except Exception as e:
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
     

@@ -3,7 +3,7 @@
 document.addEventListener("DOMContentLoaded", async () => {
     // 
     const outputDiv = document.getElementById("output");
-    const API_URL = 'd133ng57wrs7e3.cloudfront.net'//  API is now deployed behind CloudFront and accessed via HTTPS // CloudFront Distribution Domain Name
+    const API_URL = 'https://maithri-rao.com';
     // const API_URL =  'http://localhost:5000'; // when testing the API on your local machine
 
     // --- Key Management Elements ---
@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     // --- Initial Entry Point ---
-    // Instead of running the logic directly, we call a function to check for the key
     runCoreAnalysisLogic(API_URL);
 });
 
