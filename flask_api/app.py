@@ -25,11 +25,8 @@ CORS(app)  # Enable CORS for all routes
 load_dotenv() 
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY") 
-
-if YOUTUBE_API_KEY:
-    print(f"*** API KEY STATUS: Key successfully loaded. Length: {len(YOUTUBE_API_KEY)} characters.", flush=True)
-else:
-    print("*** API KEY STATUS: FATAL! YOUTUBE_API_KEY is NOT set in the environment.", flush=True)
+model = None
+vectorizer = None
 
 def preprocess_comment(comment):
     """Apply preprocessing transformations to a comment."""
@@ -83,97 +80,12 @@ def load_model(model_path, vectorizer_path): # alternatively from local director
         raise e
 
 # Initialize the model and vectorizer
-try:
- 
+try: 
     model, vectorizer = load_model("./lgbm_model.pkl", "./tfidf_vectorizer.pkl")
 
     print("*** ML STATUS: Model and Vectorizer loaded successfully.", flush=True)
 except Exception as e:
     print("*** ML STATUS: FATAL! Application cannot start without model files.", flush=True)
-
-
-def get_comments_from_youtube(video_id, max_results=50):
-    if not YOUTUBE_API_KEY:
-        print("Error: YOUTUBE_API_KEY is missing, cannot call YouTube API.", flush=True)
-        return []
-
-    try:
-        # Initialize YouTube API client
-        youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-        
-        comments_list = []
-        next_page_token = None
-        
-        # We limit to 1 page to minimize quota use and speed up response
-        request = youtube.commentThreads().list(
-            part="snippet",
-            videoId=video_id,
-            maxResults=max_results,
-            pageToken=next_page_token,
-            order="relevance"
-        )
-        response = request.execute()
-
-        # Check the raw response before processing
-        items = response.get("items", [])
-        print(f"*** YOUTUBE RESPONSE DEBUG *** Items received: {len(items)}", flush=True)
-
-        for item in items:
-            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-            comments_list.append(comment)
-            
-        print(f"Successfully fetched {len(comments_list)} comments.", flush=True)
-        return comments_list
-
-    except googleapiclient.errors.HttpError as e:
-        # Extract the status code and print the full error content.
-        status_code = e.resp.status
-        error_content = e.content.decode()
-        error_message = f"*** YOUTUBE API REJECTION *** Status: {status_code}. Content: {error_content}"
-        print(error_message, flush=True)
-        
-        # We can now rely on the detailed printout above.
-        return []
-    except Exception as e:
-        print(f"An unexpected error occurred during comment fetching: {e}", flush=True)
-        return []
-
-# --- Preprocessing and Prediction Logic ---
-
-def preprocess_text(text):
-    text = text.lower()
-    text = re.sub(r'http\S+|www\S+|\S+\.\S+', '', text) # Remove URLs
-    text = re.sub(r'<.*?>', '', text) # Remove HTML tags
-    text = re.sub(r'[^a-z0-9\s]', '', text) # Remove punctuation and special characters
-    return text
-
-def predict_sentiment(comments):
-    if not comments:
-        return None
-    
-    preprocessed_comments = [preprocess_text(comment) for comment in comments]
-    
-    comment_vectors = vectorizer.transform(preprocessed_comments)
-
-    predictions = model.predict(comment_vectors)
-    
-    # Calculate metrics
-    total_comments = len(predictions)
-    positive_count = int(sum(predictions)) # 1 is positive
-    negative_count = total_comments - positive_count # 0 is negative
-    
-    positive_rate = round(positive_count / total_comments * 100, 2)
-    negative_rate = round(negative_count / total_comments * 100, 2)
-    
-    return {
-        "status": "success",
-        "total_comments_analyzed": total_comments,
-        "positive_comments": positive_count,
-        "negative_comments": negative_count,
-        "positive_rate": positive_rate,
-        "negative_rate": negative_rate,
-        "raw_predictions": predictions.tolist() # For debugging/completeness
-    }
 
 # --- Flask Routes ---
 
@@ -181,66 +93,45 @@ def predict_sentiment(comments):
 def home():
     return "Welcome to our YouTube Sentiment Analysis API!"
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    try:
-        data = request.get_json()
-        video_id = data.get('video_id')
-        
-        if not video_id:
-            return jsonify({"error": "Missing video_id parameter"}), 400
-
-        # Step 1: Fetch comments
-        comments = get_comments_from_youtube(video_id)
-        
-        if not comments:
-            # This is the error the user is receiving
-            print(f"Warning: No comments retrieved for video ID {video_id}.", flush=True)
-            return jsonify({"error": "No comments provided (Key invalid, video private, or comments disabled)"}), 404
-        
-        # Step 2: Predict sentiment
-        analysis_result = predict_sentiment(comments)
-        
-        return jsonify(analysis_result)
-
-    except Exception as e:
-        print(f"--- FATAL ERROR in /predict endpoint ---", flush=True)
-        print(traceback.format_exc(), flush=True)
-        return jsonify({"error": "An internal server error occurred during prediction."}), 500
-
 
 @app.route('/predict_with_timestamps', methods=['POST'])
 def predict_with_timestamps():
+    """
+    Receives comments and timestamps from the browser extension and returns sentiment predictions.
+    This is the main functional endpoint.
+    """
     data = request.json
     comments_data = data.get('comments')
-    print("Comments are", comments_data)
-    print("Type of the comments", type(comments_data))
     
     if not comments_data:
         return jsonify({"error": "No comments provided"}), 400
 
     try:
+        # Separate text and timestamp data
         comments = [item['text'] for item in comments_data]
         timestamps = [item['timestamp'] for item in comments_data]
 
-        # Preprocess each comment before vectorizing
+        # 1. Preprocess
         preprocessed_comments = [preprocess_comment(comment) for comment in comments]
         
-        # Transform comments using the vectorizer
+        # 2. Vectorize
         transformed_comments = vectorizer.transform(preprocessed_comments)
 
-        # Convert the sparse matrix to dense format
-        dense_comments = transformed_comments.toarray()  # Convert to dense array
-        
-        # Make predictions
-        predictions = model.predict(dense_comments).tolist()  # Convert to list
+        # 3. Predict (returns a list of -1, 0, or 1)
+        # Convert to dense array first, as some scikit-learn models prefer it for prediction
+        dense_comments = transformed_comments.toarray()
+        predictions = model.predict(dense_comments).tolist()
 
     except Exception as e:
+        print(f"--- ERROR in /predict_with_timestamps --- {traceback.format_exc()}", flush=True)
         return jsonify({"error": f"Prediction failed: {str(e)}"}), 500
     
-    # Return the response with original comments, predicted sentiments, and timestamps
-    response = [{"comment": comment, "sentiment": sentiment, "timestamp": timestamp} for comment, sentiment, timestamp in zip(comments, predictions, timestamps)]
-    return jsonify(response)
+    # Structure response to be easily read by the client
+    response = [{"comment": comment, "sentiment": sentiment, "timestamp": timestamp} 
+                for comment, sentiment, timestamp in zip(comments, predictions, timestamps)]
+    
+    # Client expects the final data in a 'predictions' key
+    return jsonify({"predictions": response})
 
 
 @app.route('/generate_chart', methods=['POST'])
