@@ -48,5 +48,5 @@ export MLFLOW_TRACKING_URI=http://ec2-xx-xx-xx-xx.compute-1.amazonaws.com:5000/
 💡 Tip: tmux session allows the MLflow server to run persistently even after you close your connection.
 <img width="321" height="300" alt="Screenshot From 2025-10-14 12-09-28" src="https://github.com/user-attachments/assets/88fd9b18-5839-49e0-a202-6c76555b7b88" />
 <img width="300" height="585" alt="Screenshot From 2025-10-14 12-10-44" src="https://github.com/user-attachments/assets/8f9acca4-b7d2-414c-9415-c79e43824f18" />
-<img width="312" height="542" alt="Screenshot From 2025-10-14 13-26-48" src="https://github.com/user-attachments/assets/bb8cf74b-a52c-42f7-a86f-2d5f13f3ca2e" />
+<img width="312" height="522" alt="Screenshot From 2025-10-14 13-26-48" src="https://github.com/user-attachments/assets/bb8cf74b-a52c-42f7-a86f-2d5f13f3ca2e" />
 
